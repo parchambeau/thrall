@@ -1,7 +1,10 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 import os
 from datetime import datetime
 from dotenv import load_dotenv
+import boto3
+import json
+
 load_dotenv()
 
 
@@ -13,20 +16,29 @@ load_dotenv()
 # Grab secrets from environment variables
 QUEUE_URL = os.environ.get('QUEUE_URL')
 
+# Create SQS client
+sqs = boto3.client('sqs')
 
 @app.route('/')
 def base_route():
     return 'Base Notification Route'
 
-# Service to post a notification to the queue
-@app.route('/notify/<base>/<quote>')
-def notify(base, quote):
+# Service to post a notification to the queue, accepts json to be posted
+@app.route('/notify/', methods=['POST'])
+def notify(notification_type, message):
 
-    # TODO Figure out what data needs to go for notification
-    
-    
+    print (request.json)
+    # Take the JSON that was posted and use as message for Queue
+    notify_message = request.json
 
-    return 1
+    # Post message to SQS queue
+    response = sqs.send_message(
+        QueueUrl=QUEUE_URL,
+        DelaySeconds=10,
+        MessageBody=json.dumps(notify_message)
+    ) 
+    
+    return response
 
 
 if __name__ == '__main__':
