@@ -1,2 +1,2 @@
 # Basic example of a Notification Service
-# Python / Flask / Boto3
+# Python / Flask / Boto3 / Docker
