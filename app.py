@@ -34,7 +34,6 @@ def base_route():
 @app.route('/notify/', methods=['POST'])
 def notify():
 
-    print (request.json)
     # Take the JSON that was posted and use as message for Queue
     notify_message = request.json
 
