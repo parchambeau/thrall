@@ -1,11 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 import os
 from datetime import datetime
 from dotenv import load_dotenv
 import boto3
 import json
-
-load_dotenv()
+import logging as logger
 
 
 app = Flask(__name__)
@@ -14,10 +13,18 @@ app = Flask(__name__)
 load_dotenv()
 
 # Grab secrets from environment variables
-QUEUE_URL = os.environ.get('QUEUE_URL')
+SQS_QUEUE_URL = os.environ.get('SQS_QUEUE_URL')
+AWS_ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY')
+AWS_SECRET_KEY = os.environ.get('AWS_SECRET_KEY')
 
 # Create SQS client
 sqs = boto3.client('sqs')
+
+sqs_client = boto3.client(
+    'sqs',
+    aws_access_key_id=AWS_ACCESS_KEY,
+    aws_secret_access_key=AWS_SECRET_KEY
+)
 
 @app.route('/')
 def base_route():
@@ -25,7 +32,7 @@ def base_route():
 
 # Service to post a notification to the queue, accepts json to be posted
 @app.route('/notify/', methods=['POST'])
-def notify(notification_type, message):
+def notify():
 
     print (request.json)
     # Take the JSON that was posted and use as message for Queue
@@ -33,7 +40,7 @@ def notify(notification_type, message):
 
     # Post message to SQS queue
     response = sqs.send_message(
-        QueueUrl=QUEUE_URL,
+        QueueUrl=SQS_QUEUE_URL,
         DelaySeconds=10,
         MessageBody=json.dumps(notify_message)
     ) 
